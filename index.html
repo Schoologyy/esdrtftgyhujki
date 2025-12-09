@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Proxy Page</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    #content { display: none; }
+    button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+    iframe { width: 90%; height: 80vh; border: 1px solid #ccc; margin-top: 20px; }
+    input { padding: 5px; margin: 5px; }
+    .panic { background-color: red; color: white; font-weight: bold; }
+  </style>
+  <script>
+    let currentURL = "";
+
+    function checkPIN() {
+      const pin = document.getElementById("pin").value;
+      if (pin === "1234") {
+        document.getElementById("content").style.display = "block";
+        document.getElementById("login").style.display = "none";
+      } else {
+        alert("Wrong PIN");
+      }
+    }
+
+    function loadURL() {
+      const urlInput = document.getElementById("urlInput").value;
+      if (urlInput.startsWith("http")) {
+        currentURL = "/api/proxy?url=" + encodeURIComponent(urlInput);
+        document.getElementById("proxyFrame").src = currentURL;
+      } else {
+        alert("Please enter a valid URL starting with http");
+      }
+    }
+
+    function openBlank() {
+      if (currentURL) {
+        const newWin = window.open("about:blank", "_blank", "noopener,noreferrer");
+        newWin.document.write(`
+          <!DOCTYPE html>
+          <html><body style="margin:0">
+            <iframe src="${currentURL}" style="border:none;width:100%;height:100vh"></iframe>
+          </body></html>
+        `);
+        newWin.document.close();
+      } else {
+        alert("No URL loaded yet");
+      }
+    }
+
+    function goFullscreen() {
+      const iframe = document.getElementById("proxyFrame");
+      if (iframe.requestFullscreen) iframe.requestFullscreen();
+    }
+
+    function logout() {
+      document.getElementById("content").style.display = "none";
+      document.getElementById("login").style.display = "block";
+      document.getElementById("proxyFrame").src = "";
+      currentURL = "";
+    }
+
+    function panicRedirect() {
+      window.location.href = "https://drive.google.com";
+    }
+  </script>
+</head>
+<body>
+  <div id="login">
+    <h2>Enter PIN</h2>
+    <input type="password" id="pin" />
+    <button onclick="checkPIN()">Submit</button>
+  </div>
+
+  <div id="content">
+    <h1>Secure Access</h1>
+    <input type="text" id="urlInput" placeholder="Enter a URL (https://...)" size="40" />
+    <button onclick="loadURL()">Load URL</button><br>
+    <button onclick="openBlank()">Open in about:blank</button>
+    <button onclick="goFullscreen()">Fullscreen</button>
+    <button onclick="logout()">Logout</button>
+    <button class="panic" onclick="panicRedirect()">PANIC</button>
+    <iframe id="proxyFrame"></iframe>
+  </div>
+</body>
+</html>
